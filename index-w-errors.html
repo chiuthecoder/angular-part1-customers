@@ -1,0 +1,94 @@
+<html>
+<head>
+  <title></title>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <script src='js/angular.min.js'></script>
+  <script type='text/javascript'>
+    var app = angular.module('myApp', []);
+    app.factory('customersFactory', function(){
+      var customers = [
+          {name:'John Doe', created: '2015-04-02'},
+          {name:'Jane Doe', created: '2015-04-02'},
+          {name:'April Doe', created: '2015-05-02'},
+          {name:'Zoe Doe', created: '2015-05-02'}
+        ];
+        var factory = {};
+        factory.getCustomers = function(callback){
+          callback(customers);
+        };
+    
+        factory.addCustomer = function(data){
+          for(var i=0; i<customers.length; i++){
+            if(data.name === customers[i].name){
+              errors.message = "The name is already exist";
+              return false;
+            }
+          }
+          customers.push({name: data.name, created: Date()});
+        };
+
+        factory.errorMessages = function(){
+          return errors;
+        } 
+
+        factory.removeCustomer = function(name){
+          customers.splice(customers.indexOf(name), 1);
+        };
+        return factory;
+    });
+
+    app.controller('customersController', function ($scope, customersFactory){
+        $scope.customers = [];
+        $scope.errors = {};
+        customersFactory.getCustomers(function(data){
+          $scope.customers = data;
+        });
+    
+        $scope.addCustomer = function(){
+          customersFactory.addCustomer($scope.newCustomer);
+          $scope.newCustomer = {};
+        };
+
+        $scope.errors = customersFactory.errorMessages();
+
+        $scope.removeCustomer= function(name){
+          customersFactory.removeCustomer(name);
+        }
+    });
+
+  </script>
+</head>
+<body ng-app='myApp'>
+    <div class="container">
+    <div ng-controller="customersController">
+      <h2>Add a new customer</h2>
+      <form>
+
+      Name: <input type='text' ng-model='newCustomer.name'>
+              <input type='hidden' ng-model='newCustomer.created' value='date'>
+      <input type='submit' value='add new customer' ng-click='addCustomer()' class='btn btn-sm btn-primary' >
+
+      </form>
+<hr>
+  		<div>Search customers: <input type='text' ng-model='filter_name' placeholder='search home...'></div>
+
+<table class='table'>
+<tr>
+<th>Customer Name</th>
+<th>Created Date</th>
+<th>Actions</th>
+</tr>
+<tr ng-repeat="customer in customers | filter: filter_name  | orderBy: 'created' ">
+<td ng-bind='customer.name'></td>
+<td ng-bind='customer.created'></td>
+<td><button ng-click='removeCustomer(customer.name)'>delete</button></td>
+</tr>
+</table>
+
+
+
+
+    </div>
+  </div>
+</body>
+</html>
